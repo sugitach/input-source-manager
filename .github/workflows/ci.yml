@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install Homebrew (if not already present)
+      run: |
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
+
+    - name: Install Swift/Xcode Command Line Tools
+      run: |
+        # macOS runners usually have Xcode pre-installed, but ensure command line tools are selected
+        xcode-select --install || true
+        sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer || true
+
+    - name: Install gh (GitHub CLI) for Homebrew
+      run: brew install gh || true # gh is needed for build.rs to find swiftc, etc.
+
+    - name: Run tests
+      run: cargo test --verbose
