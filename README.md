@@ -17,8 +17,11 @@ The `macism-rust` command-line tool provides the following functionalities:
 - **Get current input source ID:**
   ```bash
   macism-rust
-  # or
-  macism-rust get
+  ```
+
+- **Set input source to a specific ID:**
+  ```bash
+  macism-rust jp.sourceforge.inputmethod.aquaskk.Hiragana
   ```
 
 - **List keyboard input source IDs:**
@@ -38,11 +41,6 @@ The `macism-rust` command-line tool provides the following functionalities:
 - **List all input source IDs:**
   ```bash
   macism-rust -l -p
-  ```
-
-- **Set input source to a specific ID:**
-  ```bash
-  macism-rust set jp.sourceforge.inputmethod.aquaskk.Hiragana
   ```
 
 - **Print version information:**

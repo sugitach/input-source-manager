@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use input_source_manager::{self, InputSourceError};
 
 
@@ -6,8 +6,9 @@ use input_source_manager::{self, InputSourceError};
 #[derive(Parser, Debug)]
 #[command(name = "macism-rust", version, about = "A Rust-based input source manager for macOS, mimicking macism.", long_about = None)]
 struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
+    /// The input source ID to set (positional argument)
+    #[arg(last = true)]
+    id: Option<String>,
 
     /// List all available input source IDs
     #[arg(
@@ -26,16 +27,7 @@ struct Cli {
     palette: bool,
 }
 
-#[derive(Subcommand, Debug)]
-enum Commands {
-    /// Get the current input source ID
-    Get {},
-    /// Set the input source to a specific ID
-    Set {
-        /// The ID of the input source to set
-        id: String,
-    },
-}
+
 
 fn main() {
     if let Err(e) = run() {
@@ -69,20 +61,14 @@ fn run() -> Result<(), InputSourceError> {
     }
 
     // Handle subcommands if no list/palette option is present
-    match cli.command {
-        Some(Commands::Get {}) => {
-            let current_id = input_source_manager::get_current_input_source_id()?;
-            println!("{}", current_id);
-        }
-        Some(Commands::Set { id }) => {
-            let new_id = input_source_manager::set_input_source(&id)?;
-            println!("{}", new_id);
-        }
-        None => {
-            // Default behavior: get current input source if no command is specified
-            let current_id = input_source_manager::get_current_input_source_id()?;
-            println!("{}", current_id);
-        }
+    // Handle positional argument for set or default get behavior
+    if let Some(id) = cli.id {
+        let new_id = input_source_manager::set_input_source(&id)?;
+        println!("{}", new_id);
+    } else {
+        // Default behavior: get current input source if no command is specified
+        let current_id = input_source_manager::get_current_input_source_id()?;
+        println!("{}", current_id);
     }
 
     Ok(())

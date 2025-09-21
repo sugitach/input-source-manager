@@ -36,19 +36,6 @@ fn test_get_current_id_default() {
 }
 
 #[test]
-fn test_get_current_id_explicit() {
-    let binary_path = get_binary_path();
-    let output = Command::new(&binary_path)
-        .arg("get")
-        .output()
-        .expect("Failed to execute command");
-
-    assert!(output.status.success());
-    let stdout = str::from_utf8(&output.stdout).unwrap().trim();
-    assert!(!stdout.is_empty(), "stdout should not be empty");
-}
-
-#[test]
 fn test_version() {
     let binary_path = get_binary_path();
     let output = Command::new(&binary_path)
@@ -129,12 +116,19 @@ fn test_set_and_verify() {
 
     // Set to target ID
     let set_output = Command::new(&binary_path)
-        .arg("set")
+        .arg("--") // Add -- to separate options from positional arguments
         .arg(target_id)
         .output()
         .expect("Failed to execute set command");
 
-    assert!(set_output.status.success());
+    if !set_output.status.success() {
+        panic!(
+            "Set command failed with status: {}\nstdout: {}\nstderr: {}",
+            set_output.status,
+            String::from_utf8_lossy(&set_output.stdout),
+            String::from_utf8_lossy(&set_output.stderr)
+        );
+    }
     let set_stdout = str::from_utf8(&set_output.stdout).unwrap().trim();
     assert_eq!(set_stdout, target_id);
 
@@ -147,7 +141,7 @@ fn test_set_and_verify() {
 
     // Revert to initial state
     let revert_output = Command::new(&binary_path)
-        .arg("set")
+        .arg("--") // Add -- to separate options from positional arguments
         .arg(initial_id)
         .output()
         .expect("Failed to revert to initial state");
