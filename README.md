@@ -21,11 +21,23 @@ The `macism-rust` command-line tool provides the following functionalities:
   macism-rust get
   ```
 
-- **List all available input source IDs:**
+- **List keyboard input source IDs:**
   ```bash
-  macism-rust list
+  macism-rust -l
   # or
-  macism-rust ls
+  macism-rust --list
+  ```
+
+- **List palette input source IDs:**
+  ```bash
+  macism-rust -p
+  # or
+  macism-rust --palette
+  ```
+
+- **List all input source IDs:**
+  ```bash
+  macism-rust -l -p
   ```
 
 - **Set input source to a specific ID:**
@@ -50,16 +62,16 @@ input-source-manager = "0.1.0"
 Example:
 
 ```rust
-use input_source_manager::{initialize, get_current_input_source_id, set_input_source, get_available_ids};
+use input_source_manager::{self, get_current_input_source_id, set_input_source, get_available_ids, InputSourceCategory};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    initialize(); // Must be called once
+    self::initialize(); // Must be called once
 
     let current_id = get_current_input_source_id()?;
     println!("Current input source: {}", current_id);
 
-    let available_ids = get_available_ids()?;
-    println!("Available input sources: {:?}", available_ids);
+    let available_ids = get_available_ids(InputSourceCategory::Keyboard)?;
+    println!("Available keyboard input sources: {:?}", available_ids);
 
     // Example: Set to a specific input source
     if let Some(target_id) = available_ids.first() {

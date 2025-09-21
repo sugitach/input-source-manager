@@ -21,11 +21,23 @@ macOSの入力ソースを管理するためのRustライブラリおよびコ�
   macism-rust get
   ```
 
-- **利用可能なすべての入力ソースIDを一覧表示:**
+- **キーボード入力ソースIDを一覧表示:**
   ```bash
-  macism-rust list
+  macism-rust -l
   # または
-  macism-rust ls
+  macism-rust --list
+  ```
+
+- **パレット入力ソースIDを一覧表示:**
+  ```bash
+  macism-rust -p
+  # または
+  macism-rust --palette
+  ```
+
+- **すべての入力ソースIDを一覧表示:**
+  ```bash
+  macism-rust -l -p
   ```
 
 - **入力ソースを特定のIDに設定:**
@@ -50,16 +62,16 @@ input-source-manager = "0.1.0"
 使用例:
 
 ```rust
-use input_source_manager::{initialize, get_current_input_source_id, set_input_source, get_available_ids};
+use input_source_manager::{self, get_current_input_source_id, set_input_source, get_available_ids, InputSourceCategory};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    initialize(); // 最初に一度呼び出す必要があります
+    self::initialize(); // 最初に一度呼び出す必要があります
 
     let current_id = get_current_input_source_id()?;
     println!("現在の入力ソース: {}", current_id);
 
-    let available_ids = get_available_ids()?;
-    println!("利用可能な入力ソース: {:?}", available_ids);
+    let available_ids = get_available_ids(InputSourceCategory::Keyboard)?;
+    println!("利用可能なキーボード入力ソース: {:?}", available_ids);
 
     // 例: 特定の入力ソースに設定
     if let Some(target_id) = available_ids.first() {
