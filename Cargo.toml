@@ -2,6 +2,13 @@
 name = "input-source-manager"
 version = "0.1.0"
 edition = "2021"
+description = "A Rust library and command-line tool for managing macOS input sources."
+license = "MIT"
+documentation = "https://docs.rs/input-source-manager"
+homepage = "https://github.com/sugitach/input-source-manager"
+repository = "https://github.com/sugitach/input-source-manager"
+keywords = ["macos", "input-source", "keyboard", "ime", "cli"]
+categories = ["os", "command-line-utilities"]
 
 [dependencies]
 core-foundation = "0.9"
