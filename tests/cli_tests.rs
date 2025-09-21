@@ -64,8 +64,8 @@ fn test_list_keyboard() {
 
     assert!(output.status.success());
     let stdout = str::from_utf8(&output.stdout).unwrap().trim();
-    assert!(stdout.contains("jp.sourceforge.inputmethod.aquaskk.Hiragana"));
-    assert!(!stdout.contains("com.apple.CharacterPaletteIM"));
+    assert!(!stdout.is_empty(), "Keyboard list should not be empty");
+    assert!(!stdout.contains("com.apple.CharacterPaletteIM"), "Keyboard list should not contain palette IMs");
 }
 
 #[test]
@@ -93,8 +93,8 @@ fn test_list_all() {
 
     assert!(output.status.success());
     let stdout = str::from_utf8(&output.stdout).unwrap().trim();
-    assert!(stdout.contains("jp.sourceforge.inputmethod.aquaskk.Hiragana"));
-    assert!(stdout.contains("com.apple.CharacterPaletteIM"));
+    assert!(!stdout.is_empty(), "All list should not be empty");
+    assert!(stdout.contains("com.apple.CharacterPaletteIM"), "All list should contain palette IMs");
 }
 
 #[test]
@@ -107,12 +107,33 @@ fn test_set_and_verify() {
         .expect("Failed to get initial state");
     let initial_id = str::from_utf8(&initial_output.stdout).unwrap().trim();
 
-    // Determine target ID
-    let target_id = if initial_id.contains("Hiragana") {
-        "jp.sourceforge.inputmethod.aquaskk.Ascii"
+    // Determine target ID from available keyboard input sources
+    let list_output = Command::new(&binary_path)
+        .arg("-l")
+        .output()
+        .expect("Failed to list keyboard input sources");
+    assert!(list_output.status.success());
+    let available_keyboard_ids: Vec<&str> = str::from_utf8(&list_output.stdout)
+        .unwrap()
+        .trim()
+        .lines()
+        .collect();
+
+    // Find a target ID that is different from the initial one, if possible
+    let mut target_id = "";
+    if available_keyboard_ids.len() > 1 {
+        for id in available_keyboard_ids {
+            if id != initial_id {
+                target_id = id;
+                break;
+            }
+        }
+    } else if available_keyboard_ids.len() == 1 {
+        target_id = available_keyboard_ids[0];
     } else {
-        "jp.sourceforge.inputmethod.aquaskk.Hiragana"
-    };
+        eprintln!("No keyboard input sources available for test_set_and_verify. Skipping.");
+        return;
+    }
 
     // Set to target ID
     let set_output = Command::new(&binary_path)
