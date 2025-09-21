@@ -1,6 +1,9 @@
 import Foundation
 import Carbon
-import IsmBridge
+
+// Define constants to match Rust's InputSourceCategory bitflags
+let CATEGORY_KEYBOARD_BIT: Int32 = 1 << 0 // 1
+let CATEGORY_PALETTE_BIT: Int32 = 1 << 1  // 2
 
 // This function needs to be called once before using the others.
 @_cdecl("initialize_input_source_manager")
@@ -38,8 +41,17 @@ public func free_string(ptr: UnsafeMutablePointer<CChar>?) {
 }
 
 @_cdecl("get_available_input_source_ids")
-public func getAvailableInputSourceIDs() -> UnsafeMutablePointer<CChar>? {
-    InputSourceManager.initialize() // Ensure manager is initialized before accessing inputSources
-    let allIDs = InputSourceManager.inputSources.map { $0.id }.joined(separator: ",")
+public func getAvailableInputSourceIDs(category_type: Int32) -> UnsafeMutablePointer<CChar>? {
+    // InputSourceManager.initialize() // Removed: Assumes manager is initialized by Rust
+
+    var targetIDs: [String] = []
+    if (category_type & CATEGORY_KEYBOARD_BIT) != 0 {
+        targetIDs.append(contentsOf: InputSourceManager.keyboardInputSources.map { $0.id })
+    }
+    if (category_type & CATEGORY_PALETTE_BIT) != 0 {
+        targetIDs.append(contentsOf: InputSourceManager.paletteInputSources.map { $0.id })
+    }
+
+    let allIDs = targetIDs.joined(separator: ",")
     return strdup(allIDs)
 }

@@ -7,7 +7,25 @@ extern "C" {
     fn get_current_input_source_id_swift() -> *mut c_char;
     fn select_input_source_by_id(targetID: *const c_char) -> i32;
     fn free_string(ptr: *mut c_char);
-    fn get_available_input_source_ids() -> *mut c_char;
+    fn get_available_input_source_ids(category_type: i32) -> *mut c_char;
+}
+
+// Corresponds to CATEGORY_KEYBOARD in swift_src/rust_bridge.swift
+const KEYBOARD_CATEGORY_BIT: i32 = 1 << 0;
+// Corresponds to CATEGORY_PALETTE in swift_src/rust_bridge.swift
+const PALETTE_CATEGORY_BIT: i32 = 1 << 1;
+
+/// Specifies the category of input sources to retrieve.
+/// These values correspond to the CATEGORY_KEYBOARD and CATEGORY_PALETTE constants in swift_src/rust_bridge.swift.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
+pub enum InputSourceCategory {
+    /// Retrieve only keyboard input sources.
+    Keyboard = KEYBOARD_CATEGORY_BIT,
+    /// Retrieve only palette input sources.
+    Palette = PALETTE_CATEGORY_BIT,
+    /// Retrieve all available input sources.
+    All = KEYBOARD_CATEGORY_BIT | PALETTE_CATEGORY_BIT,
 }
 
 /// Represents errors that can occur when interacting with the input source manager.
@@ -87,7 +105,8 @@ pub fn switch_input_source(sources: &[String]) -> Result<(SwitchResult, String),
         return Ok((SwitchResult::NotSwitched, current_source_id));
     }
 
-    let c_target_id = CString::new(target_id.as_str()).map_err(|_| InputSourceError::InternalError)?;
+    let c_target_id =
+        CString::new(target_id.as_str()).map_err(|_| InputSourceError::InternalError)?;
 
     let result_code = unsafe { select_input_source_by_id(c_target_id.as_ptr()) };
 
@@ -102,20 +121,24 @@ pub fn switch_input_source(sources: &[String]) -> Result<(SwitchResult, String),
     }
 }
 
-/// Returns a list of all available input source IDs.
+/// Returns a list of input source IDs for a specified category.
 ///
 /// Returns `Ok(Vec<String>)` containing a list of input source IDs on success,
 /// or an `InputSourceError` if the operation fails.
-pub fn get_available_ids() -> Result<Vec<String>, InputSourceError> {
+pub fn get_available_ids(category: InputSourceCategory) -> Result<Vec<String>, InputSourceError> {
     unsafe {
-        let c_str_ptr = get_available_input_source_ids();
+        let c_str_ptr = get_available_input_source_ids(category as i32);
         if c_str_ptr.is_null() {
-            return Ok(Vec::new()); // Return empty vec if no IDs
+            return Ok(Vec::new()); // Return empty vec if no IDs or error
         }
         let c_str = CStr::from_ptr(c_str_ptr);
         let rust_str = c_str.to_string_lossy().into_owned();
         free_string(c_str_ptr); // Free the memory allocated by Swift's strdup
-        let ids = rust_str.split(',').map(|s| s.to_string()).collect();
+        let ids = rust_str
+            .split(',')
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_string())
+            .collect();
         Ok(ids)
     }
 }

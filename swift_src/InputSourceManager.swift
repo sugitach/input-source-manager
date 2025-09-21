@@ -49,20 +49,34 @@ class InputSource: Equatable {
 }
 
 class InputSourceManager {
-    static var inputSources: [InputSource] = []
+    static var inputSources: [InputSource] = [] // Keep this as the combined list
+    static var keyboardInputSources: [InputSource] = []
+    static var paletteInputSources: [InputSource] = []
+    static var isInitialized = false // Add this flag
     static var waitTimeMs: Int = -1  // less than 0 means using default
     static var level: Int = 1
 
     static func initialize() {
+        if isInitialized { return }
+
         let inputSourceList = TISCreateInputSourceList(
             nil, false
         ).takeRetainedValue() as! [TISInputSource]
 
-        inputSources = inputSourceList
+        keyboardInputSources = inputSourceList
             .filter {
-                $0.isSelectable
+                $0.isSelectable && $0.category == TISInputSource.Category.keyboardInputSource
             }
             .map { InputSource(tisInputSource: $0) }
+
+        paletteInputSources = inputSourceList
+            .filter {
+                $0.isSelectable && $0.category == TISInputSource.Category.paletteInputSource // Use paletteInputSource category
+            }
+            .map { InputSource(tisInputSource: $0) }
+
+        inputSources = keyboardInputSources + paletteInputSources // Combine them
+        isInitialized = true // Set flag to true after initialization
     }
 
     static func getCurrentSource() -> InputSource {
@@ -82,6 +96,9 @@ extension TISInputSource {
     enum Category {
         static var keyboardInputSource: String {
             return kTISCategoryKeyboardInputSource as String
+        }
+        static var paletteInputSource: String {
+            return kTISCategoryPaletteInputSource as String
         }
     }
 

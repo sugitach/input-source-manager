@@ -1,6 +1,6 @@
 use std::env;
-use std::process::Command;
-use std::fs; // For fs::copy
+use std::fs;
+use std::process::Command; // For fs::copy
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -26,13 +26,17 @@ fn main() {
     }
 
     // Move the compiled object files to OUT_DIR
-    fs::copy(&input_manager_o_temp, format!("{}/InputSourceManager.o", out_dir))
-        .expect("Failed to copy InputSourceManager.o to OUT_DIR");
+    fs::copy(
+        &input_manager_o_temp,
+        format!("{}/InputSourceManager.o", out_dir),
+    )
+    .expect("Failed to copy InputSourceManager.o to OUT_DIR");
     fs::copy(&rust_bridge_o_temp, format!("{}/rust_bridge.o", out_dir))
         .expect("Failed to copy rust_bridge.o to OUT_DIR");
 
     // Clean up temporary .o files from current directory
-    fs::remove_file(&input_manager_o_temp).expect("Failed to remove temporary InputSourceManager.o");
+    fs::remove_file(&input_manager_o_temp)
+        .expect("Failed to remove temporary InputSourceManager.o");
     fs::remove_file(&rust_bridge_o_temp).expect("Failed to remove temporary rust_bridge.o");
 
     let input_manager_o = format!("{}/InputSourceManager.o", out_dir);
