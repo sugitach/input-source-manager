@@ -31,17 +31,6 @@ The `macism-rust` command-line tool provides the following functionalities:
   macism-rust --list
   ```
 
-- **List palette input source IDs:**
-  ```bash
-  macism-rust -p
-  # or
-  macism-rust --palette
-  ```
-
-- **List all input source IDs:**
-  ```bash
-  macism-rust -l -p
-  ```
 
 - **Print version information:**
   ```bash
@@ -68,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let current_id = get_current_input_source_id()?;
     println!("Current input source: {}", current_id);
 
-    let available_ids = get_available_ids(InputSourceCategory::Keyboard)?;
+    let available_ids = get_available_ids()?;
     println!("Available keyboard input sources: {:?}", available_ids);
 
     // Example: Set to a specific input source

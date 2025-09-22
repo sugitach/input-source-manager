@@ -18,13 +18,7 @@ struct Cli {
     )]
     list: bool,
 
-    /// List only palette input source IDs
-    #[arg(
-        short = 'p',
-        long = "palette",
-        help = "List only palette input source IDs"
-    )]
-    palette: bool,
+
 }
 
 
@@ -43,17 +37,8 @@ fn run() -> Result<(), InputSourceError> {
     let cli = Cli::parse();
 
     // Handle list/palette options
-    if cli.list || cli.palette {
-        let category = if cli.list && cli.palette {
-            input_source_manager::InputSourceCategory::All
-        } else if cli.list {
-            input_source_manager::InputSourceCategory::Keyboard
-        } else if cli.palette {
-            input_source_manager::InputSourceCategory::Palette
-        } else {
-            unreachable!();
-        };
-        let ids = input_source_manager::get_available_ids(category)?;
+    if cli.list {
+        let ids = input_source_manager::get_available_ids()?;
         for id in ids {
             println!("{}", id);
         }
@@ -63,8 +48,9 @@ fn run() -> Result<(), InputSourceError> {
     // Handle subcommands if no list/palette option is present
     // Handle positional argument for set or default get behavior
     if let Some(id) = cli.id {
-        let new_id = input_source_manager::set_input_source(&id)?;
-        println!("{}", new_id);
+        input_source_manager::set_input_source(&id)?; // Call set, but don't use its return value for printing
+        let current_id = input_source_manager::get_current_input_source_id()?; // Get current ID after potential set
+        println!("{}", current_id); // Always print the current ID
     } else {
         // Default behavior: get current input source if no command is specified
         let current_id = input_source_manager::get_current_input_source_id()?;

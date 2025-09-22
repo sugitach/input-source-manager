@@ -7,26 +7,12 @@ extern "C" {
     fn get_current_input_source_id_swift() -> *mut c_char;
     fn select_input_source_by_id(targetID: *const c_char) -> i32;
     fn free_string(ptr: *mut c_char);
-    fn get_available_input_source_ids(category_type: i32) -> *mut c_char;
+    fn get_available_input_source_ids() -> *mut c_char;
 }
 
-// Corresponds to CATEGORY_KEYBOARD in swift_src/rust_bridge.swift
-const KEYBOARD_CATEGORY_BIT: i32 = 1 << 0;
-// Corresponds to CATEGORY_PALETTE in swift_src/rust_bridge.swift
-const PALETTE_CATEGORY_BIT: i32 = 1 << 1;
 
-/// Specifies the category of input sources to retrieve.
-/// These values correspond to the CATEGORY_KEYBOARD and CATEGORY_PALETTE constants in swift_src/rust_bridge.swift.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(i32)]
-pub enum InputSourceCategory {
-    /// Retrieve only keyboard input sources.
-    Keyboard = KEYBOARD_CATEGORY_BIT,
-    /// Retrieve only palette input sources.
-    Palette = PALETTE_CATEGORY_BIT,
-    /// Retrieve all available input sources.
-    All = KEYBOARD_CATEGORY_BIT | PALETTE_CATEGORY_BIT,
-}
+
+
 
 /// Represents errors that can occur when interacting with the input source manager.
 #[derive(Debug)]
@@ -125,9 +111,9 @@ pub fn switch_input_source(sources: &[String]) -> Result<(SwitchResult, String),
 ///
 /// Returns `Ok(Vec<String>)` containing a list of input source IDs on success,
 /// or an `InputSourceError` if the operation fails.
-pub fn get_available_ids(category: InputSourceCategory) -> Result<Vec<String>, InputSourceError> {
+pub fn get_available_ids() -> Result<Vec<String>, InputSourceError> {
     unsafe {
-        let c_str_ptr = get_available_input_source_ids(category as i32);
+        let c_str_ptr = get_available_input_source_ids();
         if c_str_ptr.is_null() {
             return Ok(Vec::new()); // Return empty vec if no IDs or error
         }

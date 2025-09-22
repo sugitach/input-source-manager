@@ -68,34 +68,7 @@ fn test_list_keyboard() {
     assert!(!stdout.contains("com.apple.CharacterPaletteIM"), "Keyboard list should not contain palette IMs");
 }
 
-#[test]
-fn test_list_palette() {
-    let binary_path = get_binary_path();
-    let output = Command::new(&binary_path)
-        .arg("-p")
-        .output()
-        .expect("Failed to execute command");
 
-    assert!(output.status.success());
-    let stdout = str::from_utf8(&output.stdout).unwrap().trim();
-    assert!(!stdout.contains("jp.sourceforge.inputmethod.aquaskk.Hiragana"));
-    assert!(stdout.contains("com.apple.CharacterPaletteIM"));
-}
-
-#[test]
-fn test_list_all() {
-    let binary_path = get_binary_path();
-    let output = Command::new(&binary_path)
-        .arg("-l")
-        .arg("-p")
-        .output()
-        .expect("Failed to execute command");
-
-    assert!(output.status.success());
-    let stdout = str::from_utf8(&output.stdout).unwrap().trim();
-    assert!(!stdout.is_empty(), "All list should not be empty");
-    assert!(stdout.contains("com.apple.CharacterPaletteIM"), "All list should contain palette IMs");
-}
 
 #[test]
 fn test_set_and_verify() {

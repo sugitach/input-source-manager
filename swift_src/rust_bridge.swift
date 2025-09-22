@@ -1,9 +1,7 @@
 import Foundation
 import Carbon
 
-// Define constants to match Rust's InputSourceCategory bitflags
-let CATEGORY_KEYBOARD_BIT: Int32 = 1 << 0 // 1
-let CATEGORY_PALETTE_BIT: Int32 = 1 << 1  // 2
+
 
 // This function needs to be called once before using the others.
 @_cdecl("initialize_input_source_manager")
@@ -25,8 +23,12 @@ public func getCurrentInputSourceID() -> UnsafeMutablePointer<CChar>? {
 public func selectInputSourceByID(targetID: UnsafePointer<CChar>) -> Int32 {
     let targetIDString = String(cString: targetID)
     if let source = InputSourceManager.getInputSource(name: targetIDString) {
+        let currentSourceIDBeforeSelect = InputSourceManager.getCurrentSource().id // Capture before select
         source.select()
-        // Verify the switch for robustness
+
+
+
+        // For non-palette sources, verify the switch
         let newSourceID = InputSourceManager.getCurrentSource().id
         return newSourceID == targetIDString ? 0 : -2 // 0 for success, -2 for switch failed
     } else {
@@ -41,16 +43,8 @@ public func free_string(ptr: UnsafeMutablePointer<CChar>?) {
 }
 
 @_cdecl("get_available_input_source_ids")
-public func getAvailableInputSourceIDs(category_type: Int32) -> UnsafeMutablePointer<CChar>? {
-    // InputSourceManager.initialize() // Removed: Assumes manager is initialized by Rust
-
-    var targetIDs: [String] = []
-    if (category_type & CATEGORY_KEYBOARD_BIT) != 0 {
-        targetIDs.append(contentsOf: InputSourceManager.keyboardInputSources.map { $0.id })
-    }
-    if (category_type & CATEGORY_PALETTE_BIT) != 0 {
-        targetIDs.append(contentsOf: InputSourceManager.paletteInputSources.map { $0.id })
-    }
+public func getAvailableInputSourceIDs() -> UnsafeMutablePointer<CChar>? {
+    let targetIDs = InputSourceManager.keyboardInputSources.map { $0.id }
 
     let allIDs = targetIDs.joined(separator: ",")
     return strdup(allIDs)
