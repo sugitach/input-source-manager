@@ -35,9 +35,10 @@ class InputSource: Equatable {
         if currentSource.id == self.id {
             return
         }
-
-
+        TISSelectInputSource(self.tisInputSource)
+    }
 }
+
 
 class InputSourceManager {
     static var inputSources: [InputSource] = [] // Keep this as the combined list
